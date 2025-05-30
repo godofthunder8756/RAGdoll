@@ -1,0 +1,7 @@
+.env
+app/machine_learning.txt
+app/__pycache__/*
+app/*.faiss
+app/*.pkl
+*.pkl
+*.faiss
