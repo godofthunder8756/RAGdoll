@@ -1,0 +1,26 @@
+Legal Compliance and Regulatory Guidelines
+
+1. Data Privacy Regulations
+Our organization must comply with GDPR, CCPA, and other applicable data protection laws. All employee data must be processed lawfully with appropriate consent.
+
+2. Contract Management
+All contracts must be reviewed by the legal department before execution. Standard contract templates are available in the legal repository.
+
+3. Intellectual Property Protection
+All software code, documentation, and inventions created by employees belong to the company. Patent applications must be filed within 12 months of invention disclosure.
+
+4. Compliance Training
+All employees must complete annual compliance training covering anti-corruption, data privacy, and industry-specific regulations.
+
+5. Document Retention Policy
+Business records must be retained according to our retention schedule:
+- Financial records: 7 years
+- Employee records: 7 years after termination
+- Contracts: 7 years after expiration
+- Email communications: 3 years
+
+6. Litigation Hold Procedures
+When litigation is anticipated, all relevant documents must be preserved. IT will implement litigation hold procedures as directed by legal counsel.
+
+7. Regulatory Reporting
+Monthly compliance reports must be submitted to regulatory authorities as required by industry regulations.

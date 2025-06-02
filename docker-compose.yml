@@ -1,0 +1,154 @@
+services:
+  # Redis cache for high-performance lookups (offline)
+  redis:
+    image: redis:7-alpine
+    container_name: ragdoll-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ragdoll-redis-data:/data
+    networks:
+      - ragdoll-network
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+  # RAGdoll Enterprise ingestion service (offline)
+  ragdoll:
+    build:
+      context: .
+      args:
+        - HTTP_PROXY=
+        - HTTPS_PROXY=
+        - NO_PROXY=
+    container_name: ragdoll-enterprise
+    volumes:
+      # Mount your documents directory
+      - ./data:/app/data
+      # Persist namespace indexes and metadata
+      - ragdoll-indexes:/app/app/indexes
+      # Persist backups
+      - ragdoll-backups:/app/backups
+      # Persist namespace configuration
+      - ragdoll-config:/app/app
+      # Use local BGE-M3 model (offline)
+      - ./bge-m3_repo:/app/bge-m3_repo:ro
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      # Offline mode
+      - OFFLINE_MODE=true
+      - BGE_MODEL_PATH=/app/bge-m3_repo
+      # Namespace configuration
+      - DEFAULT_NAMESPACE=default
+      # Cache configuration (Redis internal)
+      - REDIS_URL=redis://redis:6379/0
+      - ENABLE_CACHE=true
+      - CACHE_TTL=3600
+      # Hybrid search configuration
+      - ENABLE_HYBRID_SEARCH=true
+      - BM25_WEIGHT=0.3
+      - VECTOR_WEIGHT=0.7
+      # Security
+      - RAGDOLL_SECRET_KEY=ragdoll-super-secret-key-change-in-production
+    networks:
+      - ragdoll-network
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    # Offline ingestion command
+    command: ["/app/startup.sh", "python", "-m", "app.ingest_namespaced", "--auto"]
+    # FastAPI service for REST API access (offline)
+  ragdoll-api:
+    build:
+      context: .
+      args:
+        - HTTP_PROXY=
+        - HTTPS_PROXY=
+        - NO_PROXY=
+    container_name: ragdoll-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ragdoll-indexes:/app/app/indexes:ro
+      - ragdoll-config:/app/app:ro
+      - ragdoll-backups:/app/backups
+      - ./bge-m3_repo:/app/bge-m3_repo:ro
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      # Offline mode
+      - OFFLINE_MODE=true
+      - BGE_MODEL_PATH=/app/bge-m3_repo
+      # Namespace configuration
+      - DEFAULT_NAMESPACE=default
+      # Cache configuration (Redis internal)
+      - REDIS_URL=redis://redis:6379/0
+      - ENABLE_CACHE=true
+      - CACHE_TTL=3600
+      # Hybrid search configuration
+      - ENABLE_HYBRID_SEARCH=true
+      - BM25_WEIGHT=0.3
+      - VECTOR_WEIGHT=0.7      # Security
+      - RAGDOLL_SECRET_KEY=ragdoll-super-secret-key-change-in-production
+      - ACCESS_TOKEN_EXPIRE_MINUTES=60
+    networks:
+      - ragdoll-network
+    depends_on:
+      redis:
+        condition: service_healthy
+      ragdoll:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    command: ["/app/startup.sh", "uvicorn", "app.api:app", "--host", "0.0.0.0", "--port", "8000"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  ragdoll-indexes:
+    driver: local
+  ragdoll-backups:
+    driver: local
+  ragdoll-config:
+    driver: local
+  ragdoll-redis-data:
+    driver: local
+
+networks:
+  ragdoll-network:
+    driver: bridge
+
+# Usage examples (Offline Mode):
+#
+# 1. Build and run auto-ingestion (offline):
+#    docker-compose up --build
+#
+# 2. Run interactive query mode:
+#    docker-compose run ragdoll python -m app.query_namespaced --interactive
+#
+# 3. Manage namespaces:
+#    docker-compose run ragdoll python -m app.namespace_manager list --details
+#    docker-compose run ragdoll python -m app.namespace_manager create legal --description "Legal documents"
+#
+# 4. Ingest to specific namespace:
+#    docker-compose run ragdoll python -m app.ingest_namespaced --namespace engineering
+#
+# 5. Run comprehensive tests:
+#    docker-compose run ragdoll python test_layers_2_and_4.py
+#
+# 6. Backup a namespace:
+#    docker-compose run ragdoll python -m app.namespace_manager backup legal --dir /app/backups/legal_backup
+#
+# 7. Query specific namespace:
+#    docker-compose run ragdoll python -m app.query_namespaced --namespace legal --query "compliance requirements"
+#
+# 8. Test API endpoints (after starting ragdoll-api):
+#    curl http://localhost:8000/health
+#    curl "http://localhost:8000/query?query=python&namespace=engineering"

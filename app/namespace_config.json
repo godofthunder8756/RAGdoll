@@ -1,0 +1,94 @@
+{
+  "version": "1.0",
+  "created": "2025-05-30T14:19:48.022462",
+  "namespaces": {
+    "default": {
+      "description": "Default namespace for general documents",
+      "created": "2025-05-30T14:19:48.022488",
+      "document_count": 3,
+      "chunk_count": 3,
+      "tags": [
+        "general"
+      ],
+      "last_updated": "2025-05-30T14:20:00.898314"
+    },
+    "engineering": {
+      "description": "Engineering documentation and standards",
+      "created": "2025-05-30T14:19:48.041388",
+      "document_count": 1,
+      "chunk_count": 1,
+      "tags": [
+        "test"
+      ],
+      "department": "Engineering",
+      "contact": "tech-lead@company.com",
+      "access_level": "internal",
+      "retention_policy": "standard",
+      "last_updated": "2025-05-30T14:20:02.250588"
+    },
+    "legal": {
+      "description": "Legal compliance and policy documents",
+      "created": "2025-05-30T14:19:48.045760",
+      "document_count": 1,
+      "chunk_count": 1,
+      "tags": [
+        "test"
+      ],
+      "department": "Legal",
+      "contact": "legal@company.com",
+      "access_level": "internal",
+      "retention_policy": "standard",
+      "last_updated": "2025-05-30T14:20:04.387749"
+    },
+    "hr": {
+      "description": "Human resources policies and procedures",
+      "created": "2025-05-30T14:19:48.049769",
+      "document_count": 1,
+      "chunk_count": 1,
+      "tags": [
+        "test"
+      ],
+      "department": "HR",
+      "contact": "hr@company.com",
+      "access_level": "internal",
+      "retention_policy": "standard",
+      "last_updated": "2025-05-30T14:20:03.303015"
+    },
+    "marketing": {
+      "description": "Marketing strategies and campaigns",
+      "created": "2025-05-30T14:19:48.054630",
+      "document_count": 1,
+      "chunk_count": 1,
+      "tags": [
+        "test"
+      ],
+      "department": "Marketing",
+      "contact": "marketing@company.com",
+      "access_level": "internal",
+      "retention_policy": "standard",
+      "last_updated": "2025-05-30T14:20:05.807741"
+    },
+    "it": {
+      "description": "IT infrastructure and security documentation",
+      "created": "2025-05-30T14:38:37.292543",
+      "document_count": 0,
+      "chunk_count": 0,
+      "tags": [
+        "infrastructure",
+        "security",
+        "policies"
+      ],
+      "department": "IT",
+      "contact": "it-admin@company.com",
+      "access_level": "internal",
+      "retention_policy": "standard"
+    },
+    "test_enhanced": {
+      "description": "Auto-created namespace: test_enhanced",
+      "created": "2025-06-02T10:24:04.307276",
+      "document_count": 0,
+      "chunk_count": 0,
+      "tags": []
+    }
+  }
+}

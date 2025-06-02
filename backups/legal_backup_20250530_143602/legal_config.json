@@ -1,0 +1,14 @@
+{
+  "description": "Legal compliance and policy documents",
+  "created": "2025-05-30T14:19:48.045760",
+  "document_count": 1,
+  "chunk_count": 1,
+  "tags": [
+    "test"
+  ],
+  "department": "Legal",
+  "contact": "legal@company.com",
+  "access_level": "internal",
+  "retention_policy": "standard",
+  "last_updated": "2025-05-30T14:20:04.387749"
+}

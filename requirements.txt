@@ -6,10 +6,28 @@ numpy>=1.21.0                   # Numerical operations and array handling
 # Document processing
 PyPDF2>=3.0.0                  # PDF document parsing and text extraction
 
+# FastAPI and web service dependencies
+fastapi>=0.104.0               # Modern web framework for APIs
+uvicorn[standard]>=0.24.0      # ASGI server for FastAPI
+pydantic>=2.0.0                # Data validation and serialization
+python-multipart>=0.0.6       # Form data parsing for file uploads
+
+# Authentication and security
+python-jose[cryptography]>=3.3.0  # JWT token handling
+passlib[bcrypt]>=1.7.4         # Password hashing
+python-dotenv>=1.0.0           # Environment variable loading
+
+# Cache and performance optimization
+redis>=5.0.0                   # Redis for high-performance caching
+pybloom-live>=4.0.0            # Bloom filters for fast existence checks
+
+# Hybrid search enhancements
+rank-bm25>=0.2.2               # BM25 algorithm for keyword search
+scikit-learn>=1.0.0            # Machine learning utilities for search optimization
+
 # Utility dependencies
 tqdm>=4.64.0                    # Progress bars for long operations
 pathlib                        # Path operations (built-in Python 3.4+)
 
 # Optional dependencies (not currently used but available for extension)
 # openai>=1.0.0                   # OpenAI API fallback (if needed)
-# python-dotenv>=1.0.0           # Environment variable loading

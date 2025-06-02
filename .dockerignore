@@ -1,0 +1,55 @@
+# Docker ignore file for RAGdoll
+# Note: bge-m3_repo is needed for offline operation
+
+# Large individual model files (but keep the repo structure)
+# *.bin
+# *.pt
+# *.onnx
+# *.onnx_data
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+
+# Backups
+backups/
+
+# Test outputs
+test_*.faiss
+test_*.pkl
+
+# Large data files
+*.faiss
+*.pkl
+app/indexes/
+app/namespace_config.json
+
+# Temporary files
+*.tmp
+*.temp

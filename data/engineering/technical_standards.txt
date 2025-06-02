@@ -1,0 +1,42 @@
+Engineering Best Practices and Technical Standards
+
+1. Code Quality Standards
+All code must pass automated testing with minimum 80% test coverage. Code reviews are mandatory for all pull requests.
+
+2. Architecture Guidelines
+We follow microservices architecture with Docker containerization. All services must implement health checks and observability.
+
+3. Security Requirements
+- All API endpoints must implement authentication and authorization
+- Input validation is required for all user inputs
+- Security scans must pass before deployment
+- Secrets must be stored in secure vaults, never in code
+
+4. Development Workflow
+1. Create feature branch from main
+2. Implement changes with tests
+3. Submit pull request with clear description
+4. Code review by at least 2 team members
+5. Automated testing and security scans
+6. Deployment to staging environment
+7. Production deployment after approval
+
+5. Technology Stack
+- Backend: Python FastAPI, Node.js
+- Database: PostgreSQL, Redis for caching
+- Frontend: React, TypeScript
+- Infrastructure: Docker, Kubernetes, AWS
+- Monitoring: Prometheus, Grafana, ELK stack
+
+6. Performance Standards
+- API response times must be under 200ms for 95th percentile
+- Database queries optimized with proper indexing
+- Frontend bundle size kept under 1MB
+- Memory usage monitored and optimized
+
+7. Documentation Requirements
+All code must include:
+- README with setup instructions
+- API documentation with OpenAPI specs
+- Architecture decision records (ADRs)
+- Runbooks for operational procedures
