@@ -261,7 +261,6 @@ results = await retriever.query_async("machine learning", top_k=5)
 print(f"Query time: {results['performance']['query_time_ms']}ms")
 print(f"Cache hit: {results['performance']['cache_hit']}")
 print(f"Results: {len(results['results'])}")
-```
 
 for i, result in enumerate(results):
     print(f"{i+1}. Score: {result['score']:.3f}")
