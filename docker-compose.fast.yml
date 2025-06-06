@@ -1,0 +1,120 @@
+# Docker Compose - Fast Build Configuration
+# Optimized for rapid development cycles with build caching
+
+x-common-environment: &common-environment
+  PYTHONPATH: /app
+  PYTHONUNBUFFERED: 1
+  OFFLINE_MODE: true
+  BGE_MODEL_PATH: /app/bge-m3_repo
+  DEFAULT_NAMESPACE: default
+  REDIS_URL: redis://redis:6379/0
+  ENABLE_CACHE: true
+  CACHE_TTL: 3600
+  ENABLE_HYBRID_SEARCH: true
+  BM25_WEIGHT: 0.3
+  VECTOR_WEIGHT: 0.7
+  RAGDOLL_SECRET_KEY: ragdoll-super-secret-key-change-in-production
+  OPENAI_API_KEY: ${OPENAI_API_KEY}
+
+services:
+  # Redis - Lightweight for development
+  redis:
+    image: redis:7-alpine
+    container_name: ragdoll-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --save "" --appendonly no --maxmemory 256mb
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
+      start_period: 3s
+    restart: unless-stopped
+    networks:
+      - ragdoll-network
+  # RAGdoll API service - Using pre-built fast image
+  ragdoll-api:
+    image: ragdoll-api:fast
+    container_name: ragdoll-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # For development - mount code directly to avoid rebuilds
+      - ./app:/app/app:ro
+      - ./data:/app/data:ro
+      - ragdoll-indexes:/app/app/indexes
+      - ragdoll-backups:/app/backups
+      - ./bge-m3_repo:/app/bge-m3_repo:ro
+    environment:
+      <<: *common-environment
+      ACCESS_TOKEN_EXPIRE_MINUTES: 60
+      CORS_ORIGINS: "http://localhost:3000,http://localhost:3001,http://tparty:3000"
+    networks:
+      - ragdoll-network
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    command: >
+      sh -c "
+        echo '🚀 Starting RAGdoll Enterprise (Fast Mode)';
+        echo '📂 Preloading BGE-M3 model...';
+        python -c 'from app.embedder import get_model_info; print(\"✅ BGE-M3 model found locally\")';
+        echo '🔄 Starting application...';
+        python -c 'from app.embedder import get_model_info; print(\"🔥 API components preloaded:\", get_model_info())';
+        uvicorn app.api_new:app --host 0.0.0.0 --port 8000 --workers 1 --reload
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+
+  # TParty React Frontend - Optimized for development
+  tparty:
+    build:
+      context: ./TParty
+      dockerfile: Dockerfile.fast
+      cache_from:
+        - tparty:cache-deps
+        - tparty:latest
+    container_name: tparty-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_API_URL_INTERNAL=http://ragdoll-api:8000
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - FAST_REFRESH=true
+    volumes:
+      # Hot reload for development
+      - ./TParty/src:/app/src
+      - ./TParty/public:/app/public
+      - ./TParty/package.json:/app/package.json
+      - /app/node_modules
+    networks:
+      - ragdoll-network
+    depends_on:
+      ragdoll-api:
+        condition: service_healthy
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+volumes:
+  ragdoll-indexes:
+    driver: local
+  ragdoll-backups:
+    driver: local
+
+networks:
+  ragdoll-network:
+    driver: bridge
+
+# Usage:
+# .\build-fast.ps1                    # Fast build with cleanup
+# .\build-fast.ps1 -NoCache          # Force rebuild everything
+# .\build-fast.ps1 -DevMode          # Mount code for instant changes

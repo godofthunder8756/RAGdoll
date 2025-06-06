@@ -1,7 +1,84 @@
+# Environment files
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# RAGdoll specific - Vector indexes and models
 app/machine_learning.txt
 app/__pycache__/*
 app/*.faiss
 app/*.pkl
 *.pkl
 *.faiss
+app/indexes/
+backups/
+bge-m3_repo/
+
+# Test files and temporary scripts
+test_*.py
+*_test.py
+*.bak
+*_backup*
+production_simulation.py
+cache_model.py
+warm_cache.py
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# TParty React Frontend
+TParty/node_modules/
+TParty/build/
+TParty/.env.local
+TParty/.env.development.local
+TParty/.env.test.local
+TParty/.env.production.local
+TParty/npm-debug.log*
+TParty/yarn-debug.log*
+TParty/yarn-error.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

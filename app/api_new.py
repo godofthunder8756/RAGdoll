@@ -29,6 +29,15 @@ from app.auth import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Try to import OpenAI router (optional for backward compatibility)
+try:
+    from app.openai_api import router as openai_router
+    OPENAI_AVAILABLE = True
+    logger.info("OpenAI integration enabled with GPT-4o support")
+except ImportError:
+    logger.warning("OpenAI integration not available - install openai package to enable")
+    OPENAI_AVAILABLE = False
+
 # Initialize FastAPI app
 app = FastAPI(
     title="RAGdoll Enterprise API",
@@ -46,6 +55,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include OpenAI GPT-4o integration routes if available
+if OPENAI_AVAILABLE:
+    app.include_router(openai_router, prefix="/api/v1/openai", tags=["OpenAI GPT-4o"])
+    logger.info("OpenAI GPT-4o integration enabled and routes registered")
+else:
+    logger.info("OpenAI GPT-4o integration disabled")
 
 # Initialize managers
 multi_retriever = MultiNamespaceRAGRetriever()
@@ -655,11 +671,9 @@ async def clone_namespace(
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))
     host = os.getenv("HOST", "0.0.0.0")
-    
     logger.info(f"Starting RAGdoll Enterprise API on {host}:{port}")
-    
     uvicorn.run(
-        "app.api:app",
+        "app.api_new:app",
         host=host,
         port=port,
         reload=False,  # Set to True for development

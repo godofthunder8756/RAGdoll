@@ -29,5 +29,5 @@ scikit-learn>=1.0.0            # Machine learning utilities for search optimizat
 tqdm>=4.64.0                    # Progress bars for long operations
 pathlib                        # Path operations (built-in Python 3.4+)
 
-# Optional dependencies (not currently used but available for extension)
-# openai>=1.0.0                   # OpenAI API fallback (if needed)
+# OpenAI GPT-4o integration
+openai>=1.0.0                   # OpenAI API for intelligent Q&A

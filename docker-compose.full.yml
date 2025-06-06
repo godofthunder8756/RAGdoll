@@ -1,0 +1,181 @@
+# Docker Compose with RAGdoll + TParty Integration
+# Optimized for development and production
+
+x-common-environment: &common-environment
+  PYTHONPATH: /app
+  PYTHONUNBUFFERED: 1
+  OFFLINE_MODE: true
+  BGE_MODEL_PATH: /app/bge-m3_repo
+  DEFAULT_NAMESPACE: default
+  REDIS_URL: redis://redis:6379/0
+  ENABLE_CACHE: true
+  CACHE_TTL: 3600
+  ENABLE_HYBRID_SEARCH: true
+  BM25_WEIGHT: 0.3
+  VECTOR_WEIGHT: 0.7
+  RAGDOLL_SECRET_KEY: ragdoll-super-secret-key-change-in-production
+  OPENAI_API_KEY: ${OPENAI_API_KEY}
+
+x-common-volumes: &common-volumes
+  - ./data:/app/data
+  - ragdoll-indexes:/app/app/indexes
+  - ragdoll-backups:/app/backups
+  - ragdoll-config:/app/app
+  - ./bge-m3_repo:/app/bge-m3_repo:ro
+
+services:
+  # Redis - High-performance cache
+  redis:
+    image: redis:7-alpine
+    container_name: ragdoll-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ragdoll-redis-data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - ragdoll-network
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+  # RAGdoll ingestion service (one-time execution)
+  ragdoll:
+    build:
+      context: .
+      dockerfile: Dockerfile.optimized
+      cache_from:
+        - ragdoll:latest
+    container_name: ragdoll-enterprise
+    volumes: *common-volumes
+    environment:
+      <<: *common-environment
+    networks:
+      - ragdoll-network
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: "no"  # Don't restart after completion
+    command: ["/app/startup.sh", "python", "-m", "app.ingest_namespaced", "--auto"]
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
+  # RAGdoll API service
+  ragdoll-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.optimized
+      cache_from:
+        - ragdoll:latest
+    container_name: ragdoll-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ragdoll-indexes:/app/app/indexes:ro
+      - ragdoll-config:/app/app:ro
+      - ragdoll-backups:/app/backups
+      - ./bge-m3_repo:/app/bge-m3_repo:ro
+    environment:
+      <<: *common-environment
+      ACCESS_TOKEN_EXPIRE_MINUTES: 60      # CORS settings for TParty frontend
+      CORS_ORIGINS: "http://localhost:3000,http://localhost:3001,http://tparty:3000"
+    networks:
+      - ragdoll-network
+    depends_on:
+      redis:
+        condition: service_healthy
+      ragdoll:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    command:
+      - /app/startup.sh
+      - sh
+      - -c
+      - |
+        python -c "
+        import sys
+        sys.path.append('/app')
+        from app.embedder import get_model_info
+        print('🔥 API components preloaded:', get_model_info())
+        " && uvicorn app.api_new:app --host 0.0.0.0 --port 8000 --workers 1 --reload
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+        reservations:
+          memory: 512M
+
+  # TParty React Frontend
+  tparty:
+    build:
+      context: ./TParty
+      dockerfile: Dockerfile
+    container_name: tparty-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_API_URL_INTERNAL=http://ragdoll-api:8000
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    volumes:
+      # For development - hot reload
+      - ./TParty/src:/app/src
+      - ./TParty/public:/app/public
+      - ./TParty/package.json:/app/package.json
+      - /app/node_modules  # Anonymous volume for node_modules
+    networks:
+      - ragdoll-network
+    depends_on:
+      ragdoll-api:
+        condition: service_healthy
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+volumes:
+  ragdoll-indexes:
+    driver: local
+  ragdoll-backups:
+    driver: local
+  ragdoll-config:
+    driver: local
+  ragdoll-redis-data:
+    driver: local
+
+networks:
+  ragdoll-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1500
+
+# Usage:
+# docker-compose -f docker-compose.full.yml up --build
+# Access TParty at: http://localhost:3000
+# Access RAGdoll API at: http://localhost:8000

@@ -20,12 +20,13 @@ def _load_local_model():
     """Lazy loading of the BGE-M3 model to avoid loading on import."""
     global _model_instance
     if _model_instance is None:
-        try:
-            # Try multiple model path options
+        try:            # Try multiple model path options
             model_paths = [
+                "/app/models/BAAI_bge-m3",  # Docker cached model location
                 LOCAL_EMBED_MODEL,  # From config
                 "./bge-m3_repo",
                 "bge-m3_repo",
+                "/app/bge-m3_repo",  # Docker model location
                 "BAAI/bge-m3"  # Direct HuggingFace download
             ]
             
@@ -40,14 +41,13 @@ def _load_local_model():
                 except Exception as e:
                     logger.warning(f"Failed to load model from {model_path}: {e}")
                     continue
-            
-            # If no local model found, download from HuggingFace
+              # If no local model found, download from HuggingFace
             if not model_loaded:
                 logger.info(f"No local model found, downloading BAAI/bge-m3 from HuggingFace...")
                 _model_instance = SentenceTransformer("BAAI/bge-m3", cache_folder=str(_local_model_path))
                 model_loaded = True
             
-            if model_loaded:
+            if model_loaded and _model_instance:
                 logger.info(f"[RAGdoll] Successfully loaded BGE-M3 model with {_model_instance.get_sentence_embedding_dimension()} dimensions")
             else:
                 raise RuntimeError("Could not load BGE-M3 model from any source")

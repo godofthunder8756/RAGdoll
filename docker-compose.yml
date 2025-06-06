@@ -47,13 +47,14 @@ services:
       # Cache configuration (Redis internal)
       - REDIS_URL=redis://redis:6379/0
       - ENABLE_CACHE=true
-      - CACHE_TTL=3600
-      # Hybrid search configuration
+      - CACHE_TTL=3600      # Hybrid search configuration
       - ENABLE_HYBRID_SEARCH=true
       - BM25_WEIGHT=0.3
       - VECTOR_WEIGHT=0.7
       # Security
       - RAGDOLL_SECRET_KEY=ragdoll-super-secret-key-change-in-production
+      # OpenAI Integration
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     networks:
       - ragdoll-network
     depends_on:
@@ -93,9 +94,11 @@ services:
       # Hybrid search configuration
       - ENABLE_HYBRID_SEARCH=true
       - BM25_WEIGHT=0.3
-      - VECTOR_WEIGHT=0.7      # Security
+      - VECTOR_WEIGHT=0.7
+      # Security
       - RAGDOLL_SECRET_KEY=ragdoll-super-secret-key-change-in-production
-      - ACCESS_TOKEN_EXPIRE_MINUTES=60
+      - ACCESS_TOKEN_EXPIRE_MINUTES=60      # OpenAI Integration
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     networks:
       - ragdoll-network
     depends_on:
@@ -104,7 +107,7 @@ services:
       ragdoll:
         condition: service_completed_successfully
     restart: unless-stopped
-    command: ["/app/startup.sh", "uvicorn", "app.api:app", "--host", "0.0.0.0", "--port", "8000"]
+    command: ["/app/startup.sh", "uvicorn", "app.api_new:app", "--host", "0.0.0.0", "--port", "8000"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
