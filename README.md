@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # RAGdoll Enterprise
 ## Multi-Service RAG (Retrieval-Augmented Generation) System
 
@@ -400,7 +399,6 @@ print(f"Cache efficiency: {stats['hit_rate']:.2%}")
 ```
 
 ## Project Structure
->>>>>>> a0c994a63d265b6712a796cc7660bc75ad9c6eb1
 
 ```
 RAGdoll/
@@ -482,9 +480,11 @@ ENABLE_CACHE=true               # Enable response caching
 3. Test with sample documents in `data/` directory
 4. Update documentation for new features
 
-<<<<<<< HEAD
+
 ## 📄 License
-[Add your license here]
+
+GNU GPLv3
+
 =======
 ### 🔧 **Development & Testing**
 
@@ -552,5 +552,4 @@ RAGdoll Enterprise has been **battle-tested** and is production-ready with:
 ✅ **Docker Ready**: Full containerization with multi-service orchestration  
 ✅ **Comprehensive Testing**: Validated across all components and use cases  
 
-**© Aidan Ahern 2025** | Built with ❤️ for enterprise knowledge management
->>>>>>> a0c994a63d265b6712a796cc7660bc75ad9c6eb1
+**© Aidan Ahern 2025** | Built with ❤️ and ☕
